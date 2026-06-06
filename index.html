@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E.A Hacks — Pakistan OSINT Division</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Jaro:opsz@6..72&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 65, 0.03) 2px,
+                rgba(0, 255, 65, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* ===== GERMAN AUTHORIZATION BANNER ===== */
+        .auth-banner {
+            background: #003d1211;
+            border: 2px solid #00ff41;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0,255,65,0.08);
+        }
+        
+        .auth-banner .auth-icon {
+            font-size: 1.8em;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .auth-banner .auth-text {
+            font-size: 0.85em;
+            color: #00ff41;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        
+        .auth-banner .auth-sub {
+            font-size: 0.65em;
+            color: #005f1a;
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            padding: 30px 0 25px 0;
+            border-bottom: 2px solid #00ff41;
+            margin-bottom: 25px;
+        }
+        
+        .flag-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .glitch-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5em;
+            font-weight: 900;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 40px #00ff41, 0 0 80px #00ff41;
+            animation: glitch 4s infinite;
+            letter-spacing: 8px;
+            position: relative;
+        }
+        
+        .logo-text::before {
+            content: 'E.A Hacks';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #ff00ff;
+            animation: glitch-top 3s infinite;
+            clip-path: inset(0 0 70% 0);
+            opacity: 0.6;
+        }
+        
+        .logo-text::after {
+            content: 'E.A Hacks';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #00ffff;
+            animation: glitch-bottom 3s infinite;
+            clip-path: inset(70% 0 0 0);
+            opacity: 0.6;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            92% { transform: translate(0); }
+            93% { transform: translate(-4px, 3px); }
+            94% { transform: translate(4px, -2px); }
+            95% { transform: translate(-2px, 1px); }
+            96% { transform: translate(0); }
+        }
+        
+        @keyframes glitch-top {
+            0%, 100% { transform: translate(0); }
+            92% { transform: translate(0); }
+            93% { transform: translate(5px, -3px); }
+            94% { transform: translate(-3px, 2px); }
+            95% { transform: translate(0); }
+        }
+        
+        @keyframes glitch-bottom {
+            0%, 100% { transform: translate(0); }
+            92% { transform: translate(0); }
+            93% { transform: translate(-5px, 3px); }
+            94% { transform: translate(3px, -2px); }
+            95% { transform: translate(0); }
+        }
+        
+        .subtitle {
+            font-size: 0.8em;
+            color: #008f2e;
+            margin-top: 8px;
+            letter-spacing: 4px;
+        }
+        
+        .subtitle .blink {
+            animation: blink 0.8s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .badge-row {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #00ff4111;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 4px 12px;
+            font-size: 0.65em;
+            letter-spacing: 2px;
+        }
+        
+        .badge.red { border-color: #ff3333; color: #ff3333; background: #ff333311; }
+        .badge.blue { border-color: #33aaff; color: #33aaff; background: #33aaff11; }
+        .badge.gold { border-color: #ffd700; color: #ffd700; background: #ffd70011; }
+        
+        /* ===== TERMINAL BAR ===== */
+        .terminal-bar {
+            background: #0a0a0a;
+            border: 1px solid #003d12;
+            padding: 8px 15px;
+            margin-bottom: 20px;
+            font-size: 0.75em;
+            color: #005f1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-bar .dots { display: flex; gap: 6px; }
+        .terminal-bar .dots span { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .terminal-bar .dots span:nth-child(1) { background: #ff5f56; }
+        .terminal-bar .dots span:nth-child(2) { background: #ffbd2e; }
+        .terminal-bar .dots span:nth-child(3) { background: #27c93f; }
+        
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            background: #050505;
+            border: 1px solid #00ff41;
+            padding: 12px 18px;
+            margin-bottom: 25px;
+            font-size: 0.8em;
+            color: #005f1a;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .status-bar .active { color: #00ff41; }
+        
+        /* ===== SEARCH BOX ===== */
+        .search-box {
+            background: #050505;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px rgba(0,255,65,0.08), inset 0 0 30px rgba(0,255,65,0.02);
+        }
+        
+        .search-box label {
+            display: block;
+            margin-bottom: 12px;
+            color: #00ff41;
+            font-size: 0.9em;
+            letter-spacing: 2px;
+        }
+        
+        .search-box label .prompt { color: #005f1a; }
+        
+        .input-group { display: flex; gap: 0; }
+        
+        .input-group input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #00ff41;
+            padding: 16px 20px;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            outline: none;
+        }
+        
+        .input-group input:focus { box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+        .input-group input::placeholder { color: #003d12; }
+        
+        .input-group button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 16px 35px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+        
+        .input-group button:hover {
+            background: #00cc33;
+            box-shadow: 0 0 40px rgba(0,255,65,0.4);
+        }
+        
+        .search-hint { color: #003d12; font-size: 0.7em; margin-top: 10px; }
+        
+        .error {
+            color: #ff3333;
+            padding: 12px;
+            border: 1px solid #ff3333;
+            margin-top: 12px;
+            display: none;
+            background: #ff333311;
+        }
+        
+        /* ===== LOADING ===== */
+        .loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .loading .dots span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #00ff41;
+            border-radius: 50%;
+            margin: 0 6px;
+            animation: dot-bounce 1.4s infinite ease-in-out both;
+            box-shadow: 0 0 15px #00ff41;
+        }
+        
+        .loading .dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading .dots span:nth-child(2) { animation-delay: -0.16s; }
+        .loading .dots span:nth-child(3) { animation-delay: 0s; }
+        
+        @keyframes dot-bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        .loading .text {
+            margin-top: 20px;
+            color: #005f1a;
+            font-size: 0.85em;
+            animation: blink 1.2s infinite;
+        }
+        
+        .loading .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: #003d12;
+            margin: 20px auto 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading .progress-bar::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #00ff41;
+            animation: progress 2.3s linear;
+            box-shadow: 0 0 20px #00ff41;
+        }
+        
+        @keyframes progress { 0% { left: -100%; } 100% { left: 100%; } }
+        
+        /* ===== RESULTS ===== */
+        #result {
+            display: none;
+            background: #050505;
+            border: 2px solid #00ff41;
+            margin-top: 25px;
+            box-shadow: 0 0 40px rgba(0,255,65,0.1);
+            position: relative;
+        }
+        
+        #result::before {
+            content: '▼ INCOMING TRANSMISSION ▼';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: #005f1a;
+            font-size: 0.6em;
+            padding: 0 15px;
+            letter-spacing: 3px;
+        }
+        
+        .result-header {
+            background: #00ff4108;
+            padding: 12px 18px;
+            border-bottom: 1px solid #00ff41;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-header .title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75em;
+            color: #00ff41;
+        }
+        
+        .result-header .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff41;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 10px #00ff41;
+        }
+        
+        .result-body { padding: 20px; }
+        
+        .result-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #003d12;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-item:last-child { border-bottom: none; }
+        .result-item .label { color: #008f2e; font-size: 0.9em; }
+        .result-item .value { color: #00ff41; text-align: right; font-size: 0.9em; }
+        .result-item .value a { color: #00ff41; text-decoration: none; border-bottom: 1px dotted #003d12; }
+        .result-divider { border-top: 1px dashed #003d12; margin: 10px 0; padding-top: 15px; }
+        
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            border-top: 1px solid #003d12;
+            margin-top: 40px;
+        }
+        
+        .footer .signature {
+            font-family: 'Jaro', sans-serif;
+            font-size: 2.2em;
+            color: #00ff41;
+            margin-bottom: 5px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px rgba(0,255,65,0.3);
+        }
+        
+        .footer .legal-line {
+            font-size: 0.8em;
+            color: #00ff41;
+            letter-spacing: 2px;
+            margin: 8px 0;
+            border: 1px solid #003d12;
+            display: inline-block;
+            padding: 10px 20px;
+            background: #003d1208;
+        }
+        
+        .footer .legal-sub {
+            font-size: 0.65em;
+            color: #005f1a;
+            margin-top: 8px;
+        }
+        
+        .footer .legal-sub strong { color: #008f2e; }
+        
+        @media (max-width: 600px) {
+            .logo-text { font-size: 2em; letter-spacing: 3px; }
+            .input-group { flex-direction: column; }
+            .input-group button { width: 100%; }
+            .status-bar { flex-direction: column; }
+            .result-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .result-item .value { text-align: left; }
+            .footer .legal-line { font-size: 0.65em; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="container">
+
+        <!-- GERMAN AUTHORIZATION BANNER -->
+        <div class="auth-banner">
+            <span class="auth-icon">🛡️</span>
+            <div class="auth-text">ICH HABE DIE ERLAUBNIS UND BIN BERECHTIGT, DIESEN PENTEST DURCHZUFÜHREN</div>
+            <div class="auth-sub">SCOPE: PAKISTAN TELECOM OSINT | CLIENT: E.A HACKS RED TEAM | AUTHORIZED</div>
+        </div>
+
+        <!-- TERMINAL BAR -->
+        <div class="terminal-bar">
+            <div class="dots">
+                <span></span><span></span><span></span>
+            </div>
+            <span style="color:#005f1a;">root@E.A.Hacks:~$ ./pakistan-osint --authorized --target phone</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="flag-row">
+                <span>🇵🇰</span>
+                <span>⚡</span>
+                <span>🇵🇰</span>
+            </div>
+            <div class="glitch-wrapper">
+                <div class="logo-text">E.A HACKS</div>
+            </div>
+            <div class="subtitle">
+                [ PAKISTAN INTELLIGENCE DIVISION ] 
+                <span class="blink">▌</span>
+            </div>
+            <div class="badge-row">
+                <span class="badge">🔴 RED TEAM</span>
+                <span class="badge red">🎯 PAKISTAN OPS</span>
+                <span class="badge gold">🛡️ AUTHORIZED</span>
+                <span class="badge blue">📡 OSINT v3.0</span>
+            </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <span><span class="active">●</span> SYSTEM ONLINE | NODE: KARACHI-01 | ENCRYPTION: ACTIVE</span>
+            <span style="color:#005f1a;">CARRIERS: JAZZ | TELENOR | ZONG | UFONE | SCOM</span>
+        </div>
+
+        <!-- SEARCH BOX -->
+        <div class="search-box">
+            <label><span class="prompt">root@E.A.Hacks:~$</span> scan --target</label>
+            <div class="input-group">
+                <input type="text" id="phone" placeholder="+92XXXXXXXXXX" maxlength="15">
+                <button onclick="startRecon()">▶ EXECUTE</button>
+            </div>
+            <div class="search-hint">└── Format: +92 3XX XXXXXXX — Authorized Use Only</div>
+            <div class="error" id="error">⚠️ ERROR: Invalid Pakistan number format! Use +92 3XX XXXXXXX</div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="text">⟳ ETHICAL SCAN — AUTHORIZED PENTEST ⟳</div>
+            <div class="progress-bar"></div>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="result">
+            <div class="result-header">
+                <span class="title">📡 INTELLIGENCE REPORT — PAKISTAN</span>
+                <span><span class="status-dot"></span> AUTHORIZED CAPTURE</span>
+            </div>
+            <div class="result-body" id="data"></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="signature">E.A HACKS</div>
+            <div class="legal-line">
+                🛡️ ICH HABE DIE ERLAUBNIS UND BIN BERECHTIGT, DIESEN PENTEST DURCHZUFÜHREN 🛡️
+            </div>
+            <div class="legal-sub">
+                <strong>E.A Hacks</strong> — Red Team Division | Pakistan OSINT Operations<br>
+                Alle Aktivitäten sind rechtlich autorisiert mit schriftlicher Einwilligung der Zielorganisation.<br>
+                <span style="color:#001f08;">© 2026 E.A Hacks — Authorized Penetration Testing & Security Assessment</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MATRIX RAIN
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const colors = ['#00ff41', '#008f2e', '#01411c', '#00cc33', '#005f1a', '#ffffff'];
+        const chars = 'E.A.HACKS●■▲▼☠⚡🔴🟢پاکستان0123456789';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for(let i = 0; i < columns; i++) drops[i] = Math.floor(Math.random() * -100);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for(let i = 0; i < drops.length; i++) {
+                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                ctx.font = fontSize + 'px monospace';
+                ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 45);
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        // PHONE RECON
+        function startRecon() {
+            const phone = document.getElementById('phone').value.trim();
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+            const loading = document.getElementById('loading');
+            const data = document.getElementById('data');
+            
+            error.style.display = 'none';
+            result.style.display = 'none';
+            
+            const cleaned = phone.replace(/[^0-9+]/g, '');
+            if(!/^\+923\d{9}$/.test(cleaned)) { error.style.display = 'block'; return; }
+            
+            loading.style.display = 'block';
+            
+            setTimeout(() => {
+                loading.style.display = 'none';
+                
+                const code = cleaned.substring(3, 5);
+                let carrier = 'PTA Registered';
+                let region = 'National';
+                if(['30','31','32'].includes(code)) { carrier = 'Jazz (Mobilink)'; region = 'National'; }
+                else if(['33','34','35'].includes(code)) { carrier = 'Telenor Pakistan'; region = 'Central/North'; }
+                else if(['36','37'].includes(code)) { carrier = 'Zong (China Mobile)'; region = 'South/North'; }
+                else if(['38','39'].includes(code)) { carrier = 'Ufone (PTCL)'; region = 'National'; }
+                else if(['40','41'].includes(code)) { carrier = 'SCOM (Special Comms)'; region = 'Gilgit/AJK'; }
+                
+                const cityMap = {'300':'Karachi','301':'Lahore','302':'Islamabad','303':'Rawalpindi','304':'Faisalabad','305':'Multan','306':'Peshawar','307':'Quetta','308':'Gujranwala','309':'Hyderabad','310':'Sialkot','311':'Sargodha','312':'Bahawalpur','313':'Sukkur','314':'Abbottabad','315':'Murree','316':'Swat','317':'Mardan','318':'Sahiwal','319':'Nawabshah','320':'Mirpur AJK','321':'Gilgit'};
+                const city = cityMap[cleaned.substring(5, 8)] || 'Pakistan (General)';
+                
+                data.innerHTML = `
+                    <div class="result-item"><span class="label">📟 TARGET</span><span class="value">${cleaned}</span></div>
+                    <div class="result-item"><span class="label">🇵🇰 COUNTRY</span><span class="value">Pakistan</span></div>
+                    <div class="result-item"><span class="label">📡 CARRIER</span><span class="value">${carrier}</span></div>
+                    <div class="result-item"><span class="label">📍 REGION</span><span class="value">${region}</span></div>
+                    <div class="result-item"><span class="label">🏙️ CITY</span><span class="value">${city}</span></div>
+                    <div class="result-item"><span class="label">📶 TECH</span><span class="value">4G LTE / 5G</span></div>
+                    <div class="result-item"><span class="label">🕐 TIMEZONE</span><span class="value">Asia/Karachi (UTC+5)</span></div>
+                    <div class="result-item"><span class="label">📱 WHATSAPP</span><span class="value"><a href="https://wa.me/${cleaned.replace(/[^0-9]/g,'')}" target="_blank">Check</a></span></div>
+                    <div class="result-item"><span class="label">🔐 STATUS</span><span class="value">✅ ACTIVE</span></div>
+                    <div class="result-divider"></div>
+                    <div class="result-item"><span class="label" style="color:#005f1a;">⏱️ TIME</span><span class="value" style="color:#005f1a;">${new Date().toLocaleString('en-PK')}</span></div>
+                    <div class="result-item"><span class="label" style="color:#005f1a;">🛡️ AUTH</span><span class="value" style="color:#005f1a;">✅ AUTHORIZED</span></div>
+                    <div class="result-item"><span class="label" style="color:#005f1a;">👤 OPERATOR</span><span class="value" style="color:#005f1a;">E.A Hacks — Red Team</span></div>
+                `;
+                result.style.display = 'block';
+            }, 2500);
+        }
+        document.getElementById('phone').addEventListener('keypress', function(e) { if(e.key === 'Enter') startRecon(); });
+    </script>
+</body>
+</html>
